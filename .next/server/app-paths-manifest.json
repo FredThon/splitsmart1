@@ -1,0 +1,9 @@
+{
+  "/api/ai/insights/route": "app/api/ai/insights/route.js",
+  "/(dashboard)/dashboard/page": "app/(dashboard)/dashboard/page.js",
+  "/(dashboard)/groups/page": "app/(dashboard)/groups/page.js",
+  "/(dashboard)/groups/[id]/page": "app/(dashboard)/groups/[id]/page.js",
+  "/(dashboard)/expenses/new/page": "app/(dashboard)/expenses/new/page.js",
+  "/(dashboard)/settlements/page": "app/(dashboard)/settlements/page.js",
+  "/(dashboard)/insights/page": "app/(dashboard)/insights/page.js"
+}

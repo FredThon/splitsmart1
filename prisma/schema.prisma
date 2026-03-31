@@ -1,0 +1,301 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String             @id @default(cuid())
+  clerkId           String             @unique
+  email             String             @unique
+  name              String
+  avatarUrl         String?
+  phone             String?
+  currency          String             @default("USD")
+  timezone          String             @default("UTC")
+  notifyEmail       Boolean            @default(true)
+  notifyPush        Boolean            @default(true)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  comments          Comment[]
+  expenseSplits     ExpenseSplit[]
+  expensesPaid      Expense[]          @relation("ExpensePayer")
+  fairnessMetrics   FairnessMetric[]
+  groupMemberships  GroupMember[]
+  notifications     Notification[]
+  paymentsReceived  Payment[]          @relation("PaymentReceiver")
+  paymentsSent      Payment[]          @relation("PaymentSender")
+  recurringExpenses RecurringExpense[]
+  badges            UserBadge[]
+
+  @@map("users")
+}
+
+model Group {
+  id                String             @id @default(cuid())
+  name              String
+  description       String?
+  avatarUrl         String?
+  currency          String             @default("USD")
+  type              GroupType          @default(ROOMMATES)
+  inviteCode        String             @unique @default(cuid())
+  isActive          Boolean            @default(true)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  expenses          Expense[]
+  fairnessMetrics   FairnessMetric[]
+  members           GroupMember[]
+  payments          Payment[]
+  recurringExpenses RecurringExpense[]
+
+  @@map("groups")
+}
+
+model GroupMember {
+  id       String     @id @default(cuid())
+  groupId  String
+  userId   String
+  role     MemberRole @default(MEMBER)
+  joinedAt DateTime   @default(now())
+  isActive Boolean    @default(true)
+  group    Group      @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user     User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId])
+  @@map("group_members")
+}
+
+model Expense {
+  id           String            @id @default(cuid())
+  groupId      String
+  payerId      String
+  title        String
+  description  String?
+  amount       Float
+  currency     String            @default("USD")
+  category     ExpenseCategory   @default(OTHER)
+  subcategory  String?
+  date         DateTime          @default(now())
+  receiptUrl   String?
+  receiptData  Json?
+  splitType    SplitType         @default(EQUAL)
+  isSettled    Boolean           @default(false)
+  isRecurring  Boolean           @default(false)
+  notes        String?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  recurringId  String?
+  comments     Comment[]
+  splits       ExpenseSplit[]
+  group        Group             @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  payer        User              @relation("ExpensePayer", fields: [payerId], references: [id])
+  recurringRef RecurringExpense? @relation(fields: [recurringId], references: [id])
+
+  @@index([groupId, date])
+  @@index([payerId])
+  @@map("expenses")
+}
+
+model ExpenseSplit {
+  id         String    @id @default(cuid())
+  expenseId  String
+  userId     String
+  amount     Float
+  percentage Float?
+  shares     Int?
+  isPaid     Boolean   @default(false)
+  paidAt     DateTime?
+  createdAt  DateTime  @default(now())
+  expense    Expense   @relation(fields: [expenseId], references: [id], onDelete: Cascade)
+  user       User      @relation(fields: [userId], references: [id])
+
+  @@unique([expenseId, userId])
+  @@map("expense_splits")
+}
+
+model Payment {
+  id         String        @id @default(cuid())
+  groupId    String
+  senderId   String
+  receiverId String
+  amount     Float
+  currency   String        @default("USD")
+  method     PaymentMethod @default(MANUAL)
+  status     PaymentStatus @default(PENDING)
+  stripeId   String?
+  externalId String?
+  note       String?
+  settledAt  DateTime?
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+  group      Group         @relation(fields: [groupId], references: [id])
+  receiver   User          @relation("PaymentReceiver", fields: [receiverId], references: [id])
+  sender     User          @relation("PaymentSender", fields: [senderId], references: [id])
+
+  @@index([groupId])
+  @@index([senderId, receiverId])
+  @@map("payments")
+}
+
+model FairnessMetric {
+  id           String   @id @default(cuid())
+  groupId      String
+  userId       String
+  period       String
+  totalPaid    Float    @default(0)
+  totalOwed    Float    @default(0)
+  fairShare    Float    @default(0)
+  deviation    Float    @default(0)
+  deviationPct Float    @default(0)
+  score        Float    @default(100)
+  trend        String   @default("STABLE")
+  calculatedAt DateTime @default(now())
+  group        Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user         User     @relation(fields: [userId], references: [id])
+
+  @@unique([groupId, userId, period])
+  @@index([groupId, period])
+  @@map("fairness_metrics")
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  expenseId String
+  userId    String
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  expense   Expense  @relation(fields: [expenseId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@map("comments")
+}
+
+model RecurringExpense {
+  id          String          @id @default(cuid())
+  groupId     String
+  createdById String
+  title       String
+  amount      Float
+  category    ExpenseCategory @default(OTHER)
+  frequency   RecurFrequency  @default(MONTHLY)
+  nextDue     DateTime
+  splitType   SplitType       @default(EQUAL)
+  isActive    Boolean         @default(true)
+  createdAt   DateTime        @default(now())
+  expenses    Expense[]
+  createdBy   User            @relation(fields: [createdById], references: [id])
+  group       Group           @relation(fields: [groupId], references: [id])
+
+  @@map("recurring_expenses")
+}
+
+model UserBadge {
+  id       String    @id @default(cuid())
+  userId   String
+  badge    BadgeType
+  groupId  String?
+  earnedAt DateTime  @default(now())
+  user     User      @relation(fields: [userId], references: [id])
+
+  @@map("user_badges")
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  type      NotificationType
+  title     String
+  body      String
+  data      Json?
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+  user      User             @relation(fields: [userId], references: [id])
+
+  @@index([userId, isRead])
+  @@map("notifications")
+}
+
+enum GroupType {
+  ROOMMATES
+  COUPLE
+  FRIENDS
+  TRAVEL
+  FAMILY
+  OTHER
+}
+
+enum MemberRole {
+  ADMIN
+  MEMBER
+}
+
+enum ExpenseCategory {
+  RENT
+  UTILITIES
+  GROCERIES
+  DINING
+  TRANSPORT
+  ENTERTAINMENT
+  HEALTH
+  SUBSCRIPTIONS
+  HOUSEHOLD
+  TRAVEL
+  OTHER
+}
+
+enum SplitType {
+  EQUAL
+  PERCENTAGE
+  EXACT
+  SHARES
+}
+
+enum PaymentMethod {
+  VENMO
+  PAYPAL
+  BANK_TRANSFER
+  STRIPE
+  CASH
+  MANUAL
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum RecurFrequency {
+  WEEKLY
+  BIWEEKLY
+  MONTHLY
+  QUARTERLY
+  YEARLY
+}
+
+enum BadgeType {
+  FAIR_PAYER
+  QUICK_SETTLER
+  FIRST_EXPENSE
+  GROUP_CREATOR
+  STREAK_7
+  STREAK_30
+  PEACEKEEPER
+  GENEROUS
+}
+
+enum NotificationType {
+  EXPENSE_ADDED
+  PAYMENT_RECEIVED
+  PAYMENT_REQUESTED
+  SETTLEMENT_REMINDER
+  IMBALANCE_ALERT
+  MONTHLY_INSIGHT
+  BADGE_EARNED
+  GROUP_INVITE
+}
