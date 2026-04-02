@@ -4,6 +4,8 @@ import { prisma } from '@/lib/prisma'
 import { generateGroupInsights } from '@/lib/openai'
 import { calculateBalances, calculateOptimalSettlements } from '@/lib/fairness'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(req: NextRequest) {
   const { userId: clerkId } = await auth()
   if (!clerkId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
