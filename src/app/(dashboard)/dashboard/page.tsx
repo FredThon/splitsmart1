@@ -164,13 +164,13 @@ export default async function DashboardPage() {
       {/* Main grid */}
       <div className="grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-          <RecentExpenses expenses={data.recentExpenses} currentUserId={data.user.id} />
+          <RecentExpenses expenses={data.recentExpenses as unknown as import('@/types').Expense[]} currentUserId={data.user.id} />
         </div>
         <div className="space-y-6">
           <FairnessScoreCard
             score={data.fairnessScore}
             trend={data.fairnessTrend as 'IMPROVING' | 'DECLINING' | 'STABLE'}
-            metrics={data.fairnessMetrics}
+            metrics={data.fairnessMetrics as unknown as import('@/types').FairnessMetric[]}
           />
           <QuickActions />
         </div>
