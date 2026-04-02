@@ -62,7 +62,7 @@ export default async function NotificationsPage() {
             >
               <div className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${!n.isRead ? 'bg-brand-400' : 'bg-white/10'}`} />
               <div className="flex-1 min-w-0">
-                <p className={`text-sm ${!n.isRead ? 'text-white' : 'text-white/60'}`}>{n.message}</p>
+                <p className={`text-sm ${!n.isRead ? 'text-white' : 'text-white/60'}`}>{n.body}</p>
                 <p className="text-xs text-white/30 mt-0.5">
                   {new Date(n.createdAt).toLocaleDateString('en-US', {
                     month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
