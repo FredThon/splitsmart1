@@ -1,8 +1,12 @@
 import OpenAI from 'openai'
 
-export const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-})
+let _openai: OpenAI | null = null
+function getOpenAI() {
+  if (!_openai) {
+    _openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+  }
+  return _openai
+}
 
 export interface ParsedReceipt {
   merchant: string
@@ -37,7 +41,7 @@ export interface AIInsight {
  * Returns structured expense data.
  */
 export async function parseReceiptWithAI(imageBase64: string): Promise<ParsedReceipt> {
-  const response = await openai.chat.completions.create({
+  const response = await getOpenAI().chat.completions.create({
     model: process.env.OPENAI_MODEL ?? 'gpt-4o',
     max_tokens: 1500,
     messages: [
@@ -126,7 +130,7 @@ Return a JSON array of 3-5 insights with this structure:
 
 Be specific with dollar amounts, percentages, and names. Be conversational and helpful, not clinical.`
 
-  const response = await openai.chat.completions.create({
+  const response = await getOpenAI().chat.completions.create({
     model: process.env.OPENAI_MODEL ?? 'gpt-4o',
     max_tokens: 1200,
     temperature: 0.7,
@@ -159,7 +163,7 @@ export async function suggestSmartSplit(data: {
   members: Array<{ id: string; name: string }>
   context?: string
 }): Promise<{ splits: Array<{ userId: string; amount: number; reasoning: string }> }> {
-  const response = await openai.chat.completions.create({
+  const response = await getOpenAI().chat.completions.create({
     model: process.env.OPENAI_MODEL ?? 'gpt-4o',
     max_tokens: 600,
     messages: [
