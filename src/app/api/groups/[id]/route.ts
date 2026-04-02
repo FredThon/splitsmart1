@@ -5,8 +5,9 @@ import { calculateBalances, calculateOptimalSettlements, generateAlerts, calcula
 
 export async function GET(
   _req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   const { userId: clerkId } = await auth()
   if (!clerkId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
@@ -14,7 +15,7 @@ export async function GET(
   if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 })
 
   const group = await prisma.group.findUnique({
-    where: { id: params.id },
+    where: { id },
     include: {
       members: { where: { isActive: true }, include: { user: true } },
       expenses: {
@@ -46,3 +47,4 @@ export async function GET(
     groupScore,
   })
 }
+
