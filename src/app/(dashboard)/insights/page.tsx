@@ -55,7 +55,7 @@ export default async function InsightsPage() {
       </div>
       <InsightsClient
         groups={groups}
-        fairnessHistory={fairnessHistory}
+        fairnessHistory={fairnessHistory as unknown as import('@/types').FairnessMetric[]}
         expensesByCategory={expensesByCategory.map((e) => ({
           category: e.category,
           total: e._sum.amount ?? 0,
