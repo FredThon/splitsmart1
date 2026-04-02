@@ -79,40 +79,43 @@ export function ReceiptScanner({ onParsed }: ReceiptScannerProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            {...getRootProps()}
-            className={`
-              relative border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all
-              ${isDragActive
-                ? 'border-brand-400 bg-brand-500/10'
-                : 'border-white/10 hover:border-white/20 hover:bg-white/3'
-              }
-            `}
           >
-            <input {...getInputProps()} />
-            <div className="flex flex-col items-center gap-3">
-              <div className="w-14 h-14 rounded-2xl bg-brand-500/10 border border-brand-500/20 flex items-center justify-center">
-                <Camera className="w-6 h-6 text-brand-400" />
-              </div>
-              <div>
-                <p className="text-white font-medium">Snap or upload a receipt</p>
-                <p className="text-white/30 text-sm mt-1">
-                  AI will extract items, prices, tax & category
-                </p>
-              </div>
-              <div className="flex items-center gap-2 text-xs text-white/20">
-                <span>JPG, PNG, HEIC</span>
-                <span>·</span>
-                <span>Max 10MB</span>
-              </div>
-            </div>
-            {isDragActive && (
-              <div className="absolute inset-0 flex items-center justify-center rounded-2xl bg-brand-500/5">
-                <div className="flex items-center gap-2 text-brand-400">
-                  <Upload className="w-5 h-5" />
-                  <span className="font-medium">Drop to scan</span>
+            <div
+              {...getRootProps()}
+              className={`
+                relative border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all
+                ${isDragActive
+                  ? 'border-brand-400 bg-brand-500/10'
+                  : 'border-white/10 hover:border-white/20 hover:bg-white/3'
+                }
+              `}
+            >
+              <input {...getInputProps()} />
+              <div className="flex flex-col items-center gap-3">
+                <div className="w-14 h-14 rounded-2xl bg-brand-500/10 border border-brand-500/20 flex items-center justify-center">
+                  <Camera className="w-6 h-6 text-brand-400" />
+                </div>
+                <div>
+                  <p className="text-white font-medium">Snap or upload a receipt</p>
+                  <p className="text-white/30 text-sm mt-1">
+                    AI will extract items, prices, tax & category
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 text-xs text-white/20">
+                  <span>JPG, PNG, HEIC</span>
+                  <span>·</span>
+                  <span>Max 10MB</span>
                 </div>
               </div>
-            )}
+              {isDragActive && (
+                <div className="absolute inset-0 flex items-center justify-center rounded-2xl bg-brand-500/5">
+                  <div className="flex items-center gap-2 text-brand-400">
+                    <Upload className="w-5 h-5" />
+                    <span className="font-medium">Drop to scan</span>
+                  </div>
+                </div>
+              )}
+            </div>
           </motion.div>
         )}
 
